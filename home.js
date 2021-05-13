@@ -1,4 +1,15 @@
-
+var firebaseConfig = {
+    apiKey: "AIzaSyBFkmspKoi-RDOMZfL-k9__70YIaS7vLn0",
+    authDomain: "notedemo-a1e15.firebaseapp.com",
+    projectId: "notedemo-a1e15",
+    storageBucket: "notedemo-a1e15.appspot.com",
+    messagingSenderId: "641128485554",
+    appId: "1:641128485554:web:db3794ada96d08b1ea2fab"
+};
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+firebase.analytics();
+const dbRef = firebase.database()
 
 console.log("Welcome to notes app. This is app.js");
 showNotes();
@@ -82,12 +93,44 @@ search.addEventListener("input", function(){
     })
 })
 
+async function saveNoteWithTitle(title, content) {
+    const uid = localStorage.getItem("uid")
+    const userNoteRef = dbRef.ref('notes/' + uid)
+    const noteKey = userNoteRef.push().key
+    let upd = { ['/notes/' + uid + noteKey]: { title, content } }
 
+    return await dbRef.update(upd)
+}
 
+async function saveNoteToFirebase(content) {
+    const uid = localStorage.getItem("uid")
+    const userNoteRef = dbRef.ref('notes/' + uid)
+    let notes = await getNotesForThisUser()
+    return await userNoteRef.set({
+        ...notes,
+        [Date.now()]: content
+    })
+}
 
+async function getNotesForThisUser() {
+    const uid = localStorage.getItem("uid")
+    const userNotesRef = dbRef.ref('notes/' + uid)
+    const ss = await userNotesRef.get()
+    if (ss.exists())
+        return ss.val()
+    else return {}
+
+}
+
+saveNoteToFirebase("This note was created at " + new Date().toISOString())
+    .then(async res => {
+        let notes = await getNotesForThisUser()
+        console.log(notes)
+    })
+    .catch(err => console.log(err))
 
 /*
-Further Features:
+TODO: Further Features:
 1. Add Title
 2. Mark a note as Important
 3. Separate notes by user

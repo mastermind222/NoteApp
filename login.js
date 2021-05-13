@@ -23,6 +23,8 @@ form.addEventListener('submit', function (e) {
     auth.signInWithEmailAndPassword(email, password)
         .then(cred => {
             form.reset();
+            localStorage.setItem("user", JSON.stringify(cred));
+            localStorage.setItem("uid", cred.user["uid"]);
             window.alert("Welcome "+email);
             window.location.href = "home.html";
         })
